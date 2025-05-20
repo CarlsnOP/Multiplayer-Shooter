@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dcjptc5h2hwgq"]
+[gd_scene load_steps=4 format=3 uid="uid://dcjptc5h2hwgq"]
 
 [ext_resource type="Script" uid="uid://80764skefmv7" path="res://ui/main_menu/main_menu.gd" id="1_r785l"]
 [ext_resource type="Texture2D" uid="uid://byukgpq4ekqs4" path="res://assets/textures/bg_black_and_white.png" id="2_3848r"]
+[ext_resource type="Script" uid="uid://b68ivukogia5v" path="res://ui/main_menu/quickplay_connection_ui.gd" id="3_omy8q"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -47,5 +48,50 @@ size_flags_horizontal = 4
 focus_mode = 0
 text = "Exit"
 
+[node name="QuickplayConnectionUI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_omy8q")
+
+[node name="ColorRect" type="ColorRect" parent="QuickplayConnectionUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.588235)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="QuickplayConnectionUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 32
+alignment = 1
+
+[node name="StatusLabel" type="Label" parent="QuickplayConnectionUI/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 40
+
+[node name="CloseButton" type="Button" parent="QuickplayConnectionUI/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(256, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 32
+text = "Close"
+
 [connection signal="pressed" from="VBoxContainer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]
+[connection signal="pressed" from="QuickplayConnectionUI/VBoxContainer/CloseButton" to="QuickplayConnectionUI" method="_on_close_button_pressed"]

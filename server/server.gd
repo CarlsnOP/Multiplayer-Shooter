@@ -1,5 +1,9 @@
 extends Node
 
+signal on_lobby_clients_updated(connected_clients: int, max_clients: int)
+signal on_cant_connect_to_lobby
+
+
 const PORT := 7777
 const ADDRESS := "127.0.0.1"
 
@@ -21,3 +25,17 @@ func _on_connected_to_server() -> void:
 
 func _on_connection_failed() -> void:
 	print("Failed to connect to server")
+
+func try_connect_client_to_lobby() -> void:
+	c_try_connect_client_to_lobby.rpc_id(1) #1 is always server ID
+@rpc("any_peer", "call_remote", "reliable")
+func c_try_connect_client_to_lobby() -> void:
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func s_lobby_clients_updated(connected_clients: int, max_clients: int) -> void:
+	on_lobby_clients_updated.emit(connected_clients, max_clients)
+
+@rpc("authority", "call_remote", "reliable")
+func s_client_cant_connect_to_lobby() -> void:
+	on_cant_connect_to_lobby.emit()

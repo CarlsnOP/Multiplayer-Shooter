@@ -3,7 +3,8 @@ extends Control
 
 
 func _on_play_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://maps/map_farm.tscn")
+	Server.try_connect_client_to_lobby()
+	$QuickplayConnectionUI.activate()
 
 
 func _on_exit_button_pressed() -> void:
