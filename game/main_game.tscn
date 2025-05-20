@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dou3bq44sxx1q"]
+
+[ext_resource type="Script" uid="uid://dvl1mbt3crsv4" path="res://game/local_game_scene_manager.gd" id="1_3fham"]
+
+[node name="MainGame" type="Node"]
+
+[node name="LocalGameSceneManager" type="Node" parent="." groups=["LocalGameSceneManager"]]
+script = ExtResource("1_3fham")

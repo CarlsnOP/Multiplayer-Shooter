@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Multiplayer Shooter"
-run/main_scene="res://ui/main_menu/main_menu.tscn"
+run/main_scene="uid://dou3bq44sxx1q"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -27,6 +27,11 @@ window/size/viewport_height=720
 [editor_plugins]
 
 enabled=PackedStringArray()
+
+[global_group]
+
+LocalGameSceneManager=""
+PlayerLocal=""
 
 [input]
 
