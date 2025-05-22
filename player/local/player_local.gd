@@ -1,5 +1,11 @@
-extends CharacterBody3D
+extends PlayerCharecter
+class_name PlayerLocal
 
+
+const IDLE_ANIM := "Idle"
+const AIR_ANIM := "Jump_Idle"
+const WALK_ANIM := "Walk_Shoot"
+const RUN_ANIM := "Run_Shoot"
 
 @export var normal_speed := 3.0
 @export var sprint_speed := 5.0
@@ -12,9 +18,11 @@ extends CharacterBody3D
 
 var is_grounded := true
 var is_sprinting := false
+var current_anim: String
 
 
 func _ready() -> void:
+	super()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	set_processes(false)
 
@@ -25,6 +33,8 @@ func set_processes(enabled: bool) -> void:
 
 func _physics_process(_delta: float) -> void:
 	move()
+	choose_anim()
+	check_shoot_input()
 
 
 func move():
@@ -52,6 +62,23 @@ func move():
 	
 	move_and_slide()
 
+func choose_anim() -> void:
+	if not is_grounded:
+		current_anim = AIR_ANIM
+		return
+	
+	if velocity.x or velocity.z:
+		current_anim = RUN_ANIM if is_sprinting else WALK_ANIM
+		return
+	
+	current_anim = IDLE_ANIM
+
+func check_shoot_input() -> void:
+	if Input.is_action_just_pressed("shoot"):
+		weapon_holder.start_trigger_press()
+	
+	elif Input.is_action_just_released("shoot"):
+		weapon_holder.end_trigger_press()
 
 func _input(event) -> void:
 	if event is InputEventMouseMotion:

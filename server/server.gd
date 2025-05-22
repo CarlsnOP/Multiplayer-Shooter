@@ -8,7 +8,13 @@ signal on_lobby_locked
 const PORT := 7777
 const ADDRESS := "127.0.0.1"
 
+
+@onready var clock_synch_timer = $ClockSynchTimer
+
+
 var peer := ENetMultiplayerPeer.new()
+var clock_deviation_ms := 0
+
 
 func _ready() -> void:
 	var error := peer.create_client(ADDRESS, PORT)
@@ -22,15 +28,16 @@ func _ready() -> void:
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	
 func _on_connected_to_server() -> void:
+	clock_synch_timer.start()
 	print("Connected to server")
 
 func _on_connection_failed() -> void:
 	print("Failed to connect to server")
 
-func try_connect_client_to_lobby() -> void:
-	c_try_connect_client_to_lobby.rpc_id(1) #1 is always server ID
+func try_connect_client_to_lobby(player_name: String) -> void:
+	c_try_connect_client_to_lobby.rpc_id(1, player_name) #1 is always server ID
 @rpc("any_peer", "call_remote", "reliable")
-func c_try_connect_client_to_lobby() -> void:
+func c_try_connect_client_to_lobby(player_name) -> void:
 	pass
 
 @rpc("authority", "call_remote", "reliable")
@@ -53,3 +60,14 @@ func s_create_lobby_on_clients(lobby_name: String) -> void:
 	lobby.name = lobby_name
 	add_child(lobby, true)
 	on_lobby_locked.emit()
+
+func _on_clock_synch_timer_timeout():
+	c_get_server_clock_time.rpc_id(1, floori(Time.get_unix_time_from_system() * 1000))
+@rpc("any_peer", "call_remote", "unreliable_ordered")
+func c_get_server_clock_time(client_clock_time: int) -> void:
+	pass
+
+@rpc("authority", "call_remote", "unreliable_ordered")
+func s_return_server_clock_time(server_clock_time: int, old_client_clock_time: int) -> void:
+	var local_time_when_server_sent_time = (floori(Time.get_unix_time_from_system() * 1000) + old_client_clock_time) / 2
+	clock_deviation_ms = lerp(clock_deviation_ms, local_time_when_server_sent_time - server_clock_time, 0.5)

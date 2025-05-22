@@ -19,10 +19,15 @@ config/icon="res://icon.svg"
 
 Server="*res://server/server.tscn"
 
+[debug]
+
+gdscript/warnings/unused_parameter=0
+
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/stretch/scale=0.5
 
 [editor_plugins]
 
@@ -32,6 +37,7 @@ enabled=PackedStringArray()
 
 LocalGameSceneManager=""
 PlayerLocal=""
+WeaponSelectionUI=""
 
 [input]
 

@@ -4,3 +4,7 @@
 
 [node name="Server" type="Node"]
 script = ExtResource("1_pcfvm")
+
+[node name="ClockSynchTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="ClockSynchTimer" to="." method="_on_clock_synch_timer_timeout"]
