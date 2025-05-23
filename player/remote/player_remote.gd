@@ -18,6 +18,9 @@ const SKIN_MATERIALS := [
 ]
 
 
+@export var name_tag_label = Label
+
+
 @onready var animation_player = %AnimationPlayer
 @onready var body_mesh = %Body
 @onready var helmet_mesh = %Head_2
@@ -26,7 +29,6 @@ const SKIN_MATERIALS := [
 @onready var bone_torso := skeleton.find_bone("Torso")
 @onready var bone_abdomen := skeleton.find_bone("Abdomen")
 @onready var bone_upper_arm_r := skeleton.find_bone("UpperArm.R")
-@onready var name_tag_label = %NameTagLabel
 
 
 var display_name: String
