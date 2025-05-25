@@ -38,6 +38,7 @@ enabled=PackedStringArray()
 LocalGameSceneManager=""
 PlayerLocal=""
 WeaponSelectionUI=""
+MatchInfoUI=""
 
 [input]
 

@@ -7,6 +7,7 @@ const INTERPOLATION_BUFFER_MS := 100
 
 var players := {}
 var world_state_buffer: Array[Dictionary] = []
+var pickups := {}
 
 
 func get_local_player() -> PlayerLocal:
@@ -74,6 +75,9 @@ func handle_world_state() -> void:
 		if not client_id in world_state_buffer[0].ps.keys():
 			continue
 		
+		if not is_instance_valid(players.get(client_id)):
+			continue
+		
 		var remote_player: PlayerRemote = remote_players.get(client_id)
 		
 		remote_player.update_body_geometry(
@@ -110,11 +114,12 @@ func s_start_match() -> void:
 	set_physics_process(true)
 
 @rpc("authority", "call_remote", "reliable")
-func s_spawn_player(client_id: int, spawn_tfrom: Transform3D, team: int, player_name: String, weapon_id: int) -> void:
+func s_spawn_player(client_id: int, spawn_tfrom: Transform3D, team: int, player_name: String, weapon_id: int, auto_freeze: bool) -> void:
 	var player: PlayerCharecter
 	
 	if client_id == multiplayer.get_unique_id():
 		player = preload("res://player/local/player_local.tscn").instantiate()
+		player.auto_freeze = auto_freeze
 		
 	else:
 		player = preload("res://player/remote/player_remote.tscn").instantiate()
@@ -179,7 +184,30 @@ func s_update_health(target_client_id: int, current_health: int, max_health: int
 	var maybe_player: PlayerCharecter = players.get(target_client_id)
 	if is_instance_valid(maybe_player):
 		maybe_player.update_health_bar(current_health, max_health, changed_amount)
+
+@rpc("authority", "call_remote", "reliable")
+func s_spawn_pickup(pickup_name: String, pickup_type: int, pos: Vector3) -> void:
+	var pickup: Pickup = preload("res://player/pickups/pickup.tscn").instantiate()
+	pickup.name = pickup_name
+	pickup.position = pos
+	add_child(pickup, true)
+	pickups[pickup.name] = pickup
 	
+
+@rpc("authority", "call_remote", "reliable")
+func s_pickup_cooldown_started(pickup_name: String) -> void:
+	pickups.get(pickup_name).cooldown_started()
 	
+@rpc("authority", "call_remote", "reliable")
+func s_pickup_cooldown_ended(pickup_name: String) -> void:
+	pickups.get(pickup_name).cooldown_ended()
 	
-	
+@rpc("authority", "call_remote", "reliable")
+func s_player_died(dead_player_id: int) -> void:
+	if players.has(dead_player_id):
+		players.get(dead_player_id).queue_free()
+		players[dead_player_id] = null
+
+@rpc("authority", "call_remote", "reliable")
+func s_update_game_scores(blue_score: int, red_score: int) -> void:
+	get_tree().call_group("MatchInfoUI", "update_score", blue_score, red_score)

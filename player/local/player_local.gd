@@ -19,12 +19,14 @@ const RUN_ANIM := "Run_Shoot"
 var is_grounded := true
 var is_sprinting := false
 var current_anim: String
+var auto_freeze := false
 
 
 func _ready() -> void:
 	super()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	set_processes(false)
+	if auto_freeze:
+		set_processes(false)
 
 func set_processes(enabled: bool) -> void:
 	set_process(enabled)

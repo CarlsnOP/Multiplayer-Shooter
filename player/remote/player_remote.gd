@@ -52,7 +52,7 @@ func set_anim(anim_name: String) -> void:
 	animation_player.play(anim_name, ANIM_BLEND_TIME)
 
 func set_rot_x_visuals(rot_x: float) -> void:
-	var rot_weight := remap(rot_x, -PI/2.0, PI/2.0, 0, 1)
+	var rot_weight := remap(rot_x, -PI/2.0, PI/2.0, 0, 0.7)
 	
 	#Neck
 	var q_neck := skeleton.get_bone_pose_rotation(bone_neck)
