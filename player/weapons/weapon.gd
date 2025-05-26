@@ -10,7 +10,7 @@ class_name Weapon
 @onready var shoot_light = %ShootLight
 
 
-func _ready():
+func _ready() -> void:
 	shoot_light.hide()
 	shoot_particles.finished.connect(shoot_light.hide)
 

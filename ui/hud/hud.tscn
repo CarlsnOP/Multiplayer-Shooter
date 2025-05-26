@@ -1,6 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://qty0uvl51pci"]
+[gd_scene load_steps=5 format=3 uid="uid://qty0uvl51pci"]
 
 [ext_resource type="PackedScene" uid="uid://vrnsgv8hdyy0" path="res://player/player_info/health_bar.tscn" id="1_xmswo"]
+[ext_resource type="Texture2D" uid="uid://cr3t77cm3qiui" path="res://assets/textures/grenade_icon.png" id="2_4d6w6"]
+[ext_resource type="Script" uid="uid://cub37vi8pujlc" path="res://ui/hud/grenade_prompt_control.gd" id="3_e0nub"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xmswo"]
+resource_local_to_scene = true
+bg_color = Color(0, 0.858824, 0, 0.784314)
+skew = Vector2(0.3, 0)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -44,3 +55,27 @@ theme_override_constants/margin_bottom = 32
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 8
+theme_override_styles/fill = SubResource("StyleBoxFlat_xmswo")
+
+[node name="GrenadeInfoContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+
+[node name="GrenadeAmountLabel" type="Label" parent="MarginContainer/GrenadeInfoContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 32
+text = "2"
+
+[node name="GrenadeIconTextureRect" type="TextureRect" parent="MarginContainer/GrenadeInfoContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+texture = ExtResource("2_4d6w6")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GrenadePromptControl" type="Control" parent="MarginContainer" groups=["GrenadePromptControl"]]
+layout_mode = 2
+script = ExtResource("3_e0nub")

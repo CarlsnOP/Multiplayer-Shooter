@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cwaqdu0mey7gg"]
+[gd_scene load_steps=7 format=3 uid="uid://cwaqdu0mey7gg"]
 
 [ext_resource type="Script" uid="uid://d0fubsir631bh" path="res://player/local/player_local.gd" id="1_gucd0"]
 [ext_resource type="Script" uid="uid://w3yth5g50ien" path="res://player/local_weapon_holder.gd" id="2_y8ftr"]
@@ -17,10 +17,14 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="PlayerLocal" type="CharacterBody3D" node_paths=PackedStringArray("weapon_holder", "health_bar") groups=["PlayerLocal"]]
+[sub_resource type="SphereShape3D" id="SphereShape3D_y8ftr"]
+radius = 4.5
+
+[node name="PlayerLocal" type="CharacterBody3D" node_paths=PackedStringArray("grenade_amount_label", "weapon_holder", "health_bar") groups=["PlayerLocal"]]
 collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_gucd0")
+grenade_amount_label = NodePath("HUD/MarginContainer/GrenadeInfoContainer/GrenadeAmountLabel")
 weapon_holder = NodePath("Head/LocalWeaponHolder")
 health_bar = NodePath("HUD/MarginContainer/HealthBar")
 
@@ -44,5 +48,16 @@ metadata/_custom_type_script = "uid://wr0gbq5pomya"
 
 [node name="HealthBar" parent="HUD/MarginContainer" index="0"]
 theme_override_styles/fill = SubResource("StyleBoxFlat_y8ftr")
+
+[node name="GrenadeDetectionArea3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GrenadeDetectionArea3D"]
+shape = SubResource("SphereShape3D_y8ftr")
+
+[connection signal="area_entered" from="GrenadeDetectionArea3D" to="." method="_on_grenade_detection_area_3d_area_entered"]
+[connection signal="area_exited" from="GrenadeDetectionArea3D" to="." method="_on_grenade_detection_area_3d_area_exited"]
 
 [editable path="HUD"]

@@ -3,8 +3,8 @@ class_name Pickup
 
 
 enum PickupTypes {
-	Health,
-	Grenade
+	HealthPickup,
+	GrenadePickup
 }
 
 
@@ -16,15 +16,15 @@ const NOT_READY_MATERIAL = preload("res://assets/materials/pickup_not_ready_mate
 @onready var mesh_holder: Node3D = %MeshHolder
 
 
-var pickup_type: int
+var pickup_type: PickupTypes
 
 
 func _ready() -> void:
 	match pickup_type:
-		PickupTypes.Health:
+		PickupTypes.HealthPickup:
 			mesh_holder.add_child(load("res://assets/meshes/items/health.tscn").instantiate())
 			
-		PickupTypes.Grenade:
+		PickupTypes.GrenadePickup:
 			mesh_holder.add_child(load("res://assets/meshes/items/grenade.tscn").instantiate())
 			
 func cooldown_started() -> void:
