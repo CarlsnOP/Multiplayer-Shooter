@@ -10,6 +10,8 @@ func _ready() -> void:
 			particles.append(child)
 			child.finished.connect(particles_finished.bind(child))
 			child.emitting = true
+	
+	AudioManager.play_sfx(AudioManager.SFXKeys.GrenadeExplode, global_position, 0.1)
 			
 func particles_finished(particle: GPUParticles3D) -> void:
 	particles.erase(particle)

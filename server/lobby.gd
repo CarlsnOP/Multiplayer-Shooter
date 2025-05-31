@@ -9,6 +9,7 @@ var players := {}
 var world_state_buffer: Array[Dictionary] = []
 var pickups := {}
 var grenades := {}
+var player_names_and_teams := {}
 
 
 func get_local_player() -> PlayerLocal:
@@ -134,6 +135,7 @@ func s_start_loading_map() -> void:
 	map.ready.connect(map_ready)
 	add_child(map, true)
 	get_tree().call_group("LocalGameSceneManager", "clear_scenes")
+	AudioManager.play_music(AudioManager.MusicKeys.BattleMusic)
 
 func map_ready() -> void:
 	c_map_ready.rpc_id(1)
@@ -143,7 +145,7 @@ func c_map_ready() -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func s_start_match() -> void:
-	get_tree().call_group("PlayerLocal", "set_processes", true)
+	get_tree().call_group("PlayerLocal", "unfreeze")
 	set_physics_process(true)
 
 @rpc("authority", "call_remote", "reliable")
@@ -164,6 +166,8 @@ func s_spawn_player(client_id: int, spawn_tfrom: Transform3D, team: int, player_
 	player.global_transform = spawn_tfrom
 	add_child(player, true)
 	players[client_id] = player
+	
+	player_names_and_teams[client_id] = {"display_name": player_name, "team": team}
 
 @rpc("authority", "call_remote", "unreliable_ordered")
 func s_send_world_state(new_world_state: Dictionary) -> void:
@@ -237,10 +241,24 @@ func s_pickup_cooldown_ended(pickup_name: String) -> void:
 	pickups.get(pickup_name).cooldown_ended()
 	
 @rpc("authority", "call_remote", "reliable")
-func s_player_died(dead_player_id: int) -> void:
+func s_player_died(dead_player_id: int, killer_id: int) -> void:
 	if players.has(dead_player_id):
+		var eliminated_fx := preload("res://player/player_eliminated_fx.tscn").instantiate()
+		eliminated_fx.global_position = players.get(dead_player_id).global_position
+		add_child(eliminated_fx)
 		players.get(dead_player_id).queue_free()
 		players[dead_player_id] = null
+	
+	get_tree().call_group(
+		"MatchInfoUI",
+		"show_elimination_text",
+		killer_id,
+		dead_player_id,
+		player_names_and_teams.get(killer_id).display_name,
+		player_names_and_teams.get(killer_id).team,
+		player_names_and_teams.get(dead_player_id).display_name,
+		player_names_and_teams.get(dead_player_id).team
+		)
 
 @rpc("authority", "call_remote", "reliable")
 func s_update_game_scores(blue_score: int, red_score: int) -> void:
@@ -282,3 +300,25 @@ func explode_grenade(grenade_name: String) -> void:
 		grenade.queue_free()
 	
 	grenades[grenade_name].exploded = true
+
+@rpc("authority", "call_remote", "unreliable")
+func s_play_pickup_fx(pickup_type: int) -> void:
+	match pickup_type:
+		Pickup.PickupTypes.HealthPickup:
+			AudioManager.play_sfx(AudioManager.SFXKeys.PickupHealth)
+		
+		Pickup.PickupTypes.GrenadePickup:
+			AudioManager.play_sfx(AudioManager.SFXKeys.PickupGrenade)
+
+func exit_game() -> void:
+	c_client_quit_match.rpc_id(1)
+	queue_free()
+@rpc("any_peer", "call_remote", "reliable")
+func c_client_quit_match() -> void:
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func s_delete_player(client_id: int) -> void:
+	if players.has(client_id):
+		players.get(client_id).queue_free()
+		players.erase(client_id)

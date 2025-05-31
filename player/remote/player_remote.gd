@@ -46,6 +46,9 @@ func update_body_geometry(old_data: Dictionary, new_data: Dictionary, lerp_weigh
 	set_rot_x_visuals(lerp_angle(old_data.rot_x, new_data.rot_x, lerp_weight))
 
 func set_anim(anim_name: String) -> void:
+	if animation_player.assigned_animation == "Jump_Idle" and anim_name != "Jump_Idle":
+		AudioManager.play_sfx(AudioManager.SFXKeys.JumpLand, global_position, 0.2)
+	
 	if animation_player.assigned_animation == anim_name:
 		return
 	
@@ -87,3 +90,6 @@ func update_name_tag() -> void:
 
 func play_shoot_fx() -> void:
 	weapon_holder.weapon.play_shoot_fx()
+
+func play_footstep_sfx() -> void:
+	AudioManager.play_sfx(AudioManager.SFXKeys.Footstep, global_position, 0.2)

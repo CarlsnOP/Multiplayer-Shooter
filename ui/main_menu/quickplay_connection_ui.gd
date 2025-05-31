@@ -40,7 +40,9 @@ func on_lobby_locked() -> void:
 
 func _on_close_button_pressed():
 	hide()
+	AudioManager.play_sfx(AudioManager.SFXKeys.UIClick)
 
 func _on_cancel_button_pressed():
 	hide()
 	Server.cancel_quickplay_search()
+	AudioManager.play_sfx(AudioManager.SFXKeys.UIClick)

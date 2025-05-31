@@ -21,7 +21,7 @@ func shoot() -> void:
 	is_on_cooldown = true
 	get_tree().create_timer(weapon.shot_cooldown).timeout.connect(on_cooldown_timer_timeout)
 	
-	weapon.play_shoot_fx()
+	weapon.play_shoot_fx(true)
 	
 	if recoil_tween != null:
 		recoil_tween.kill()
@@ -33,6 +33,7 @@ func shoot() -> void:
 	recoil_tween.tween_property(weapon, "position:z", 0.0, RECOIL_TWEEN_TIME)
 	
 	get_tree().call_group("Lobby", "local_shot_fired")
+	get_tree().call_group("CameraShakeComponent", "add_noise", 0.1)
 	
 func start_trigger_press() -> void:
 	trigger_pressed = true

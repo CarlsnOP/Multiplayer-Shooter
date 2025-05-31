@@ -1,0 +1,14 @@
+extends Node
+
+
+var mute_enabled := false
+var fullscreen_enabled := false
+
+
+func set_audio_mute(enabled: bool) -> void:
+	mute_enabled = enabled
+	AudioServer.set_bus_mute(0, enabled)
+
+func set_fullscreen(enabled: bool) -> void:
+	fullscreen_enabled = enabled
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if enabled else DisplayServer.WINDOW_MODE_WINDOWED)

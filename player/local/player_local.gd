@@ -6,6 +6,8 @@ const IDLE_ANIM := "Idle"
 const AIR_ANIM := "Jump_Idle"
 const WALK_ANIM := "Walk_Shoot"
 const RUN_ANIM := "Run_Shoot"
+const FOOTSTEP_AUDIO_INTERVAL_WALK := 0.5
+const FOOTSTEP_AUDIO_INTERVAL_RUN := 0.37
 
 
 @export var grenade_amount_label: Label
@@ -15,21 +17,53 @@ const RUN_ANIM := "Run_Shoot"
 @export var gravity := 0.2
 @export var mouse_sensitivity := 0.005
 
+
 @onready var head: Node3D = $Head
+@onready var footstep_timer: Timer = %FootstepTimer
+@onready var pause_screen: Control = %PauseScreen
 
 
 var is_grounded := true
 var is_sprinting := false
 var current_anim: String
 var auto_freeze := false
+var is_frozen: bool
+var is_paused := false
 var nearby_grenades: Array[Grenade] = []
 
 
 func _ready() -> void:
 	super()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	
 	if auto_freeze:
-		set_processes(false)
+		freeze()
+	
+	pause_screen.hide()
+
+func pause() -> void:
+	set_processes(false)
+	is_paused = true
+	pause_screen.show()
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func unpause() -> void:
+	if not is_frozen:
+		set_processes(true)
+		
+	is_paused = false
+	pause_screen.hide()
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func freeze() -> void:
+	set_processes(false)
+	is_frozen = true
+
+func unfreeze() -> void:
+	if not is_paused:
+		set_processes(true)
+		
+	is_frozen = false
 
 func set_processes(enabled: bool) -> void:
 	set_process(enabled)
@@ -44,14 +78,22 @@ func _physics_process(_delta: float) -> void:
 	show_nearby_grenades()
 
 func move():
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
 	if is_on_floor():
 		is_sprinting = Input.is_action_pressed("sprint")
 	
 		if Input.is_action_just_pressed("jump"):
 			velocity.y = jump_velocity
-	
+		
+		if not direction.is_zero_approx() and footstep_timer.is_stopped():
+			AudioManager.play_sfx(AudioManager.SFXKeys.Footstep, Vector3.ZERO, 0.2)
+			footstep_timer.start(FOOTSTEP_AUDIO_INTERVAL_WALK if not is_sprinting else FOOTSTEP_AUDIO_INTERVAL_RUN)
+		
 		if not is_grounded:
 			is_grounded = true
+			AudioManager.play_sfx(AudioManager.SFXKeys.JumpLand, Vector3.ZERO, 0.2)
 	
 	else:
 		velocity.y -= gravity
@@ -60,8 +102,6 @@ func move():
 			is_grounded = false
 	
 	var speed := normal_speed if not is_sprinting else sprint_speed
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	velocity.z = direction.z * speed
 	velocity.x = direction.x * speed
@@ -103,10 +143,17 @@ func show_nearby_grenades() -> void:
 func update_grenades_left(grenades_left: int) -> void:
 	grenade_amount_label.text = str(grenades_left)
 
+func update_health_bar(current_health: int, max_health: int, changed_amount: int) -> void:
+	super(current_health, max_health, changed_amount)
+	
+	if changed_amount < 0:
+		get_tree().call_group("CameraShakeComponent", "add_noise", absi(changed_amount) / float(max_health))
+	
+	get_tree().call_group("HealthChangeMask", "update_mask", current_health / float(max_health))
+	
 func _input(event) -> void:
 	if event is InputEventMouseMotion:
 		look_around(event.relative)
-
 
 func look_around(relative:Vector2):
 	rotate_y(-relative.x * mouse_sensitivity)
@@ -116,7 +163,7 @@ func look_around(relative:Vector2):
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		pause() if not is_paused else unpause()
 
 func _on_grenade_detection_area_3d_area_entered(area: Area3D) -> void:
 	nearby_grenades.append(area.get_parent())
